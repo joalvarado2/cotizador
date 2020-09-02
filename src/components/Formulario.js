@@ -1,8 +1,8 @@
-import React, {useState} from "react"
+import React, { useState } from "react"
 import styled from "@emotion/styled"
-import{obtenerDiferenciaYear, calcularMarca, obtenerPlan} from "../helper"
+import { obtenerDiferenciaYear, calcularMarca, obtenerPlan } from "../helper"
 
-const Campo =styled.div`
+const Campo = styled.div`
     display: flex;
     margin-bottom: 1rem;
     align-items: center;
@@ -20,7 +20,7 @@ const Select = styled.select`
     -webkit-appearance: none;
 `
 
-const InputRadio =styled.input`
+const InputRadio = styled.input`
     margin: 0 1rem;
 `
 
@@ -52,7 +52,7 @@ const Error = styled.div`
     margin-bottom: 2rem;
     `
 
-const Formulario = ({setResumen}) => {
+const Formulario = ({ setResumen, setCargando }) => {
 
     const [datos, setDatos] = useState({
         marca: "",
@@ -62,50 +62,59 @@ const Formulario = ({setResumen}) => {
     const [error, setError] = useState(false);
 
     // extrayendo los valores del state
-    const { marca, year ,plan} = datos
+    const { marca, year, plan } = datos
 
     // leyendo los datos del formulario para colocarlos en el state
-    const obtenerInformacion = (event) =>{
+    const obtenerInformacion = (event) => {
         setDatos({
             ...datos,
-            [event.target.name] : event.target.value
+            [event.target.name]: event.target.value
         })
     }
 
     // cuando el usuario presiona submit
-    const cotizarSeguro = event =>{
+    const cotizarSeguro = event => {
         event.preventDefault();
 
-        if(marca.trim() === "" || year.trim() === "" || plan.trim() === ""){
+        if (marca.trim() === "" || year.trim() === "" || plan.trim() === "") {
             setError(true);
             return;
         }
         setError(false);
-        
+
         //  base de 2000
-        let resultado = 2000
+        let resultado = 200000
 
         // obtener la diferencia de años
         const diferencia = obtenerDiferenciaYear(year)
 
         // por cada año hay que restar el 3%
         resultado -= ((diferencia * 3) * resultado) / 100;
-      
+
         // americano 15%
         // asiatico 5%
         // europeo 30%
         resultado = calcularMarca(marca) * resultado
-        console.log(resultado)
 
         // basíco aumenta 20%
         // completo 50%
         const incrementoPlan = obtenerPlan(plan);
         resultado = parseFloat(incrementoPlan * resultado).toFixed(2)
 
-        setResumen({
-            cotizacion: resultado,
-            datos
-        })
+        setCargando(true)
+
+        setTimeout(() => {
+            // elimina el spinner
+            setCargando(false)
+
+            // pasa información al componente principal
+            setResumen({
+                cotizacion: Number(resultado),
+                datos
+            })
+        }, 3000)
+
+
         // total
 
     }
@@ -120,7 +129,7 @@ const Formulario = ({setResumen}) => {
                 <Select
                     name="marca"
                     value={marca}
-                    onChange ={obtenerInformacion}
+                    onChange={obtenerInformacion}
                 >
                     <option value="">-- Seleccione --</option>
                     <option value="americano">Americano</option>
@@ -131,9 +140,9 @@ const Formulario = ({setResumen}) => {
             <Campo>
                 <Label>Año</Label>
                 <Select
-                     name="year"
-                     value={year}
-                     onChange ={obtenerInformacion}
+                    name="year"
+                    value={year}
+                    onChange={obtenerInformacion}
                 >
                     <option value="">-- Seleccione --</option>
                     <option value="2021">2021</option>
@@ -155,16 +164,16 @@ const Formulario = ({setResumen}) => {
                     type="radio"
                     name="plan"
                     value="basico"
-                    checked ={plan === "basico"}
-                    onChange ={obtenerInformacion}
+                    checked={plan === "basico"}
+                    onChange={obtenerInformacion}
                 /> Básico
 
                 <InputRadio
                     type="radio"
                     name="plan"
                     value="completo"
-                    checked ={plan === "completo"}
-                    onChange ={obtenerInformacion}
+                    checked={plan === "completo"}
+                    onChange={obtenerInformacion}
                 /> Completo
             </Campo>
 
